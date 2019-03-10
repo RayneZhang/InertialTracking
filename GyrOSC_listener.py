@@ -92,9 +92,9 @@ if __name__ == "__main__":
     # https://pypi.org/project/python-osc/
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip",
-      default="10.0.0.28", help="The ip to listen on")
+      default="35.2.150.153", help="The ip to listen on")
     parser.add_argument("--port",
-      type=int, default=5005, help="The port to listen on")
+      type=int, default=2222, help="The port to listen on")
     args = parser.parse_args()
 
     # Start multiprocess queue...information goes in here and leaves the
