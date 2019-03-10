@@ -58,6 +58,18 @@ class modified_output(multiprocessing.Process):
             'zshake':{
                 's':'Shook in the Z direction!',
                 't':0
+            },
+            'pitch':{
+                's':'Pitch!',
+                't':0
+            },
+            'roll':{
+                's':'Roll!',
+                't':0
+            },
+            'yaw':{
+                's':'Yaw!',
+                't':0
             }
         }
 
@@ -90,20 +102,20 @@ class modified_output(multiprocessing.Process):
 
 if __name__ == "__main__":
 
-    img = cv2.imread('banana.jpg')
-    screen_res = 1280, 720
-    scale_width = screen_res[0] / img.shape[1]
-    scale_height = screen_res[1] / img.shape[0]
-    scale = min(scale_width, scale_height)
-    window_width = int(img.shape[1] * scale)
-    window_height = int(img.shape[0] * scale)
+    # img = cv2.imread('banana.jpg')
+    # screen_res = 1280, 720
+    # scale_width = screen_res[0] / img.shape[1]
+    # scale_height = screen_res[1] / img.shape[0]
+    # scale = min(scale_width, scale_height)
+    # window_width = int(img.shape[1] * scale)
+    # window_height = int(img.shape[0] * scale)
 
-    cv2.namedWindow('dst_rt', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('dst_rt', window_width, window_height)
+    # cv2.namedWindow('dst_rt', cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow('dst_rt', window_width, window_height)
 
-    cv2.imshow('dst_rt', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('dst_rt', img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     # Set up the server details, as described in the documentation:
     # https://pypi.org/project/python-osc/
@@ -121,7 +133,7 @@ if __name__ == "__main__":
     # Create instance of event handler class:
     mo = modified_output(bq)
 
-    def put_in_queue(args0, args1, args2, args3):
+    def put_accel_in_queue(args0, args1, args2, args3):
         """Put a string into the queue, to process sequentially. The things you put_in_queue
         doesn't have to be a string...you could put any python object."""
         if args1 < -1.0 or args1 > 1.0: # Y-Horizontal shake.
@@ -130,11 +142,22 @@ if __name__ == "__main__":
             bq.put('yshake')
         if args3 < -1.0 or args3 > 1.0: # Vertical shake.
             bq.put('zshake')
+    
+    def put_gyro_in_queue(args0, args1, args2, args3):
+        """Put a string into the queue, to process sequentially. The things you put_in_queue
+        doesn't have to be a string...you could put any python object."""
+        if args1 < -1.0 or args1 > 1.0: # Rotation around x axis.
+            bq.put('pitch')
+        if args2 < -1.0 or args2 > 1.0: # Rotation around y axis.
+            bq.put('roll')
+        if args3 < -1.0 or args3 > 1.0: # Rotation around z axis.
+            bq.put('yaw')
 
     # Initialize the dispatcher. This class essentially directs the data stream
     # to where it should go based off of that data's identifier.
     dispatcher = dispatcher.Dispatcher()
-    dispatcher.map("/gyrosc/myphone/accel",put_in_queue)
+    dispatcher.map("/gyrosc/myphone/accel",put_accel_in_queue)
+    dispatcher.map("/gyrosc/myphone/gyro",put_gyro_in_queue)
 
     # Set up the server thread.
     server = osc_server.ThreadingOSCUDPServer(
