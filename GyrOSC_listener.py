@@ -21,6 +21,7 @@ import datetime
 import sys
 from pythonosc import dispatcher
 from pythonosc import osc_server
+import cv2
 
 
 class modified_output(multiprocessing.Process):
@@ -88,6 +89,22 @@ class modified_output(multiprocessing.Process):
 
 
 if __name__ == "__main__":
+
+    img = cv2.imread('banana.jpg')
+    screen_res = 1280, 720
+    scale_width = screen_res[0] / img.shape[1]
+    scale_height = screen_res[1] / img.shape[0]
+    scale = min(scale_width, scale_height)
+    window_width = int(img.shape[1] * scale)
+    window_height = int(img.shape[0] * scale)
+
+    cv2.namedWindow('dst_rt', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('dst_rt', window_width, window_height)
+
+    cv2.imshow('dst_rt', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
     # Set up the server details, as described in the documentation:
     # https://pypi.org/project/python-osc/
     parser = argparse.ArgumentParser()
