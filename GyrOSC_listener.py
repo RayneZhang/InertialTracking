@@ -56,20 +56,24 @@ class modified_output(multiprocessing.Process):
                 's':'Shook in the X direction!',
                 't':0
             },
-            'yshake':{
-                's':'yshake',
+            'playpause':{
+                's':'playpause',
                 't':0
             },
             'zshake':{
-                's':'Shook in the Z direction!',
+                's':'zshake',
                 't':0
             },
             'pitch':{
                 's':'Pitch!',
                 't':0
             },
-            'roll':{
-                's':'Roll!',
+            'prev':{
+                's':'prev',
+                't':0
+            },
+            'next':{
+                's':'next',
                 't':0
             },
             'yaw':{
@@ -89,16 +93,25 @@ class modified_output(multiprocessing.Process):
                 if now > self.commands[event]['t']+self.delay:
                     # Reset time.
                     self.commands[event]['t'] = now
-                    if self.commands[event]['s'] == 'yshake':
+
+                    headers = {'Authorization': self.token}
+
+                    if self.commands[event]['s'] == 'playpause':
                         print('Shook in the Y direction!')
-                        headers = {'Authorization': self.token}
                         if self.playing == False:
                             play = requests.put('https://api.spotify.com/v1/me/player/play', headers=headers)
                             self.playing = True
                         else:
                             pause = requests.put('https://api.spotify.com/v1/me/player/pause', headers=headers)
                             self.playing = False
-                    
+                        
+                    if self.commands[event]['s'] == 'prev':
+                        print('Skip to previous track!')
+                        prev = requests.post('https://api.spotify.com/v1/me/player/previous', headers=headers)
+
+                    if self.commands[event]['s'] == 'next':
+                        print('Skip to next track!')
+                        nxt = requests.post('https://api.spotify.com/v1/me/player/next', headers=headers)
 
                 # Reset and wait for the next event command.
                 waiting_command = False
@@ -115,22 +128,6 @@ class modified_output(multiprocessing.Process):
 
 
 if __name__ == "__main__":
-
-    # img = cv2.imread('banana.jpg')
-    # screen_res = 1280, 720
-    # scale_width = screen_res[0] / img.shape[1]
-    # scale_height = screen_res[1] / img.shape[0]
-    # scale = min(scale_width, scale_height)
-    # window_width = int(img.shape[1] * scale)
-    # window_height = int(img.shape[0] * scale)
-
-    # cv2.namedWindow('dst_rt', cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow('dst_rt', window_width, window_height)
-
-    # cv2.imshow('dst_rt', img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
     # Set up the server details, as described in the documentation:
     # https://pypi.org/project/python-osc/
     parser = argparse.ArgumentParser()
@@ -153,7 +150,7 @@ if __name__ == "__main__":
         if args1 < -1.0 or args1 > 1.0: # Y-Horizontal shake.
             bq.put('xshake')
         if args2 < -1.0 or args2 > 1.0: # Y-Horizontal shake.
-            bq.put('yshake')
+            bq.put('playpause')
         if args3 < -1.0 or args3 > 1.0: # Vertical shake.
             bq.put('zshake')
     
@@ -162,8 +159,10 @@ if __name__ == "__main__":
         doesn't have to be a string...you could put any python object."""
         if args1 < -1.0 or args1 > 1.0: # Rotation around x axis.
             bq.put('pitch')
-        if args2 < -1.0 or args2 > 1.0: # Rotation around y axis.
-            bq.put('roll')
+        if args2 < -0.9: # Rotation around y axis.
+            bq.put('prev')
+        if args2 > 0.9: # Rotation around y axis.
+            bq.put('next')
         if args3 < -1.0 or args3 > 1.0: # Rotation around z axis.
             bq.put('yaw')
 
