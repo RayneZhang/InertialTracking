@@ -22,6 +22,7 @@ import sys
 from pythonosc import dispatcher
 from pythonosc import osc_server
 import requests
+import math
 
 class modified_output(multiprocessing.Process):
 
@@ -52,20 +53,8 @@ class modified_output(multiprocessing.Process):
         self.delay = 0.4
         # Initialize the events that could happen.
         self.commands = {
-            'xshake':{
-                's':'Shook in the X direction!',
-                't':0
-            },
             'playpause':{
                 's':'playpause',
-                't':0
-            },
-            'zshake':{
-                's':'zshake',
-                't':0
-            },
-            'pitch':{
-                's':'Pitch!',
                 't':0
             },
             'prev':{
@@ -76,8 +65,59 @@ class modified_output(multiprocessing.Process):
                 's':'next',
                 't':0
             },
-            'yaw':{
-                's':'Yaw!',
+            'yaw5':{
+                's':'volume',
+                'level':50,
+                't':0
+            },
+            'yaw6':{
+                's':'volume',
+                'level':40,
+                't':0
+            },
+            'yaw7':{
+                's':'volume',
+                'level':30,
+                't':0
+            },
+            'yaw8':{
+                's':'volume',
+                'level':20,
+                't':0
+            },
+            'yaw9':{
+                's':'volume',
+                'level':10,
+                't':0
+            },
+            'yaw10':{
+                's':'volume',
+                'level':0,
+                't':0
+            },
+            'yaw-6':{
+                's':'volume',
+                'level':60,
+                't':0
+            },
+            'yaw-7':{
+                's':'volume',
+                'level':70,
+                't':0
+            },
+            'yaw-8':{
+                's':'volume',
+                'level':80,
+                't':0
+            },
+            'yaw-9':{
+                's':'volume',
+                'level':90,
+                't':0
+            },
+            'yaw-10':{
+                's':'volume',
+                'level':100,
                 't':0
             }
         }
@@ -112,6 +152,10 @@ class modified_output(multiprocessing.Process):
                     if self.commands[event]['s'] == 'next':
                         print('Skip to next track!')
                         nxt = requests.post('https://api.spotify.com/v1/me/player/next', headers=headers)
+                    if self.commands[event]['s'] == 'volume':
+                        level = str(self.commands[event]['level'])
+                        print('Adjust volume to %s !'%level)
+                        volume = requests.put('https://api.spotify.com/v1/me/player/volume?volume_percent=' + level, headers=headers)
 
                 # Reset and wait for the next event command.
                 waiting_command = False
@@ -132,7 +176,7 @@ if __name__ == "__main__":
     # https://pypi.org/project/python-osc/
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip",
-      default="35.2.150.153", help="The ip to listen on")
+      default="35.2.198.8", help="The ip to listen on")
     parser.add_argument("--port",
       type=int, default=2222, help="The port to listen on")
     args = parser.parse_args()
@@ -147,24 +191,19 @@ if __name__ == "__main__":
     def put_accel_in_queue(args0, args1, args2, args3):
         """Put a string into the queue, to process sequentially. The things you put_in_queue
         doesn't have to be a string...you could put any python object."""
-        if args1 < -1.0 or args1 > 1.0: # Y-Horizontal shake.
-            bq.put('xshake')
         if args2 < -1.0 or args2 > 1.0: # Y-Horizontal shake.
             bq.put('playpause')
-        if args3 < -1.0 or args3 > 1.0: # Vertical shake.
-            bq.put('zshake')
     
     def put_gyro_in_queue(args0, args1, args2, args3):
         """Put a string into the queue, to process sequentially. The things you put_in_queue
         doesn't have to be a string...you could put any python object."""
-        if args1 < -1.0 or args1 > 1.0: # Rotation around x axis.
-            bq.put('pitch')
         if args2 < -0.9: # Rotation around y axis.
             bq.put('prev')
         if args2 > 0.9: # Rotation around y axis.
             bq.put('next')
-        if args3 < -1.0 or args3 > 1.0: # Rotation around z axis.
-            bq.put('yaw')
+        if (args3 < -0.5 and args3 > -1.0) or (args3 > 0.5 and args3 < 1.0): # Rotation around z axis.
+            level = str(math.floor(args3 * 10))
+            bq.put('yaw' + level)
 
     # Initialize the dispatcher. This class essentially directs the data stream
     # to where it should go based off of that data's identifier.
