@@ -21,8 +21,7 @@ import datetime
 import sys
 from pythonosc import dispatcher
 from pythonosc import osc_server
-import cv2
-
+import requests
 
 class modified_output(multiprocessing.Process):
 
@@ -33,6 +32,12 @@ class modified_output(multiprocessing.Process):
 
         # Make queue an instance variable.
         self._bq = bq
+
+        # Set up local variables.
+        self.playing = True
+
+        # Set up token.
+        self.token = ''
 
     def run(self):
         '''This method is what is invoked when calling a Process class's .start() method.'''
@@ -52,7 +57,7 @@ class modified_output(multiprocessing.Process):
                 't':0
             },
             'yshake':{
-                's':'Shook in the Y direction!',
+                's':'yshake',
                 't':0
             },
             'zshake':{
@@ -82,9 +87,18 @@ class modified_output(multiprocessing.Process):
 
                 # Prevent duplicate prints for the same shake event:
                 if now > self.commands[event]['t']+self.delay:
-                    # Print information about the shake event.
-                    print(self.commands[event]['s'])
+                    # Reset time.
                     self.commands[event]['t'] = now
+                    if self.commands[event]['s'] == 'yshake':
+                        print('Shook in the Y direction!')
+                        headers = {'Authorization': self.token}
+                        if self.playing == False:
+                            play = requests.put('https://api.spotify.com/v1/me/player/play', headers=headers)
+                            self.playing = True
+                        else:
+                            pause = requests.put('https://api.spotify.com/v1/me/player/pause', headers=headers)
+                            self.playing = False
+                    
 
                 # Reset and wait for the next event command.
                 waiting_command = False
