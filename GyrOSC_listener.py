@@ -38,7 +38,7 @@ class modified_output(multiprocessing.Process):
         self.playing = True
 
         # Set up token.
-        self.token = ''
+        self.token = 'Bearer BQCjRaFT2aOV8GynYzZ45NpOlRQzc8mU1ZPRf72f-Abd16DqfRxVjBcr8I-lXXShL_9mp8OAbgfmjbXH3mZLV3OPB3UHh-nWV1I5oift2KgEikKAESrSC4VUfRSaY-TV0A28jkEQa-4LI9B-0nF2l5s'
 
     def run(self):
         '''This method is what is invoked when calling a Process class's .start() method.'''
