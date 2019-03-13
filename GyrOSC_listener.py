@@ -38,7 +38,7 @@ class modified_output(multiprocessing.Process):
         self.playing = True
 
         # Set up token.
-        self.token = 'Bearer BQCjRaFT2aOV8GynYzZ45NpOlRQzc8mU1ZPRf72f-Abd16DqfRxVjBcr8I-lXXShL_9mp8OAbgfmjbXH3mZLV3OPB3UHh-nWV1I5oift2KgEikKAESrSC4VUfRSaY-TV0A28jkEQa-4LI9B-0nF2l5s'
+        self.token = 'Bearer'
 
     def run(self):
         '''This method is what is invoked when calling a Process class's .start() method.'''
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     # https://pypi.org/project/python-osc/
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip",
-      default="35.2.198.8", help="The ip to listen on")
+      default="35.3.100.95", help="The ip to listen on")
     parser.add_argument("--port",
       type=int, default=2222, help="The port to listen on")
     args = parser.parse_args()
